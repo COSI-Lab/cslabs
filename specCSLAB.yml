@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cslabs
+  namespace: cosi
+  labels:
+    app: cslabs #DO NOT JST PUT "C"!!!
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cslabs
+  template:
+    metadata:
+      labels:
+        app: cslabs
+    spec:
+      containers:
+        - name: cslabs
+          image: registry.cosi.clarkson.edu/cosi-meta/cslabs
+          ports:
+            - containerPort: 8080
+          #CONECT TO THE POD HERE PT 1
+          volumeMounts:
+            - name: data
+              mountPath: /home/cslabs/cslabs/data
+          #^^^
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+    #CONECT TO THE POD HERE PT 2
+    volumes:
+        - name: data
+        persistentVolumeClaim:
+            claimName: cslabs-data # use name from PersistentVolumeClaim
+    #^^^
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+    name: cslabs-data #Kabab case, USE FOR PART 2!
+    namespace: cosi
+spec:
+    accessModes:
+    - ReadWriteMany #INFANET EDITS
+    storageClassName: longhorn #burg
+    resources:
+        requests:
+            storage: 2Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cslabs
+  namespace: cosi
+spec:
+  selector: {app: cslabs}
+  ports:
+    - port: 80
+      targetPort: 8080 #The port you are using for the containerPort.
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: cslabs-tls
+  namespace: cosi
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`cslabs.cosi.clarkson.edu`)
+      services:
+        - name: cslabs
+          port: 80
+  tls:
+    certResolver: le
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: cslabs-redirect
+  namespace: cosi
+spec:
+  entryPoints:
+    - web
+  routes:
+  - match: Host(`cslabs.cosi.clarkson.edu`)
+    kind: Rule
+    middlewares:
+    - name: https-redirect
+      namespace: cosi
+    services: # stupid ass bullshit
+        - name: noop@internal
+          kind: TraefikService
