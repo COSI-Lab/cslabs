@@ -4,7 +4,7 @@ metadata:
   name: cslabs
   namespace: cosi
   labels:
-    app: cslabs #DO NOT JST PUT "C"!!!
+    app: cslabs
 spec:
   replicas: 1
   selector:
@@ -32,12 +32,12 @@ spec:
             limits:
               cpu: 200m
               memory: 128Mi
-    #CONECT TO THE POD HERE PT 2
-    volumes:
+      #CONECT TO THE POD HERE PT 2
+      volumes:
         - name: data
-        persistentVolumeClaim:
+          persistentVolumeClaim:
             claimName: cslabs-data # use name from PersistentVolumeClaim
-    #^^^
+      #^^^
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
