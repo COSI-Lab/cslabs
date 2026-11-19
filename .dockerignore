@@ -1,0 +1,18 @@
+# copied from gitignore
+BeadleResearchArchive.zip
+BeadleThesis.pdf
+Stallman.ogg
+cz
+gp
+jtorrey.mkv
+kali
+old/
+python/
+um/
+x86_64/
+
+# dockerignore specific
+.gitignore
+.gitlab-ci.yml
+README.md
+Dockerfile
